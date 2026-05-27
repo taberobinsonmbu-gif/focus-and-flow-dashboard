@@ -1,0 +1,876 @@
+DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Focus & Flow — Productivity Dashboard</title>
+
+    <!-- ===== GOOGLE FONTS: Poppins for premium typography ===== -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- ===== FONT AWESOME ICONS ===== -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* ===== RESET & BASE STYLES ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        /* ===== ANIMATED GRADIENT BACKGROUND (the slow color shift adds life) ===== */
+        body {
+            min-height: 100vh;
+            background: linear-gradient(-45deg, #0f0c29, #302b63, #24243e, #1a1a2e);
+            background-size: 400% 400%;
+            animation: gradientShift 18s ease infinite;
+            color: #f8fafc;
+            padding: 30px 20px;
+            overflow-x: hidden;
+        }
+        @keyframes gradientShift {
+            0%   { background-position: 0% 50%; }
+            50%  { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* ===== FLOATING NEON BLOBS in the background (extra atmosphere) ===== */
+        body::before, body::after {
+            content: '';
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(90px);
+            z-index: -1;
+            opacity: 0.45;
+            pointer-events: none;
+        }
+        body::before {
+            width: 420px; height: 420px;
+            background: #a855f7;
+            top: -120px; left: -120px;
+            animation: floatA 22s ease-in-out infinite;
+        }
+        body::after {
+            width: 520px; height: 520px;
+            background: #3b82f6;
+            bottom: -160px; right: -160px;
+            animation: floatB 26s ease-in-out infinite;
+        }
+        @keyframes floatA {
+            0%, 100% { transform: translate(0, 0); }
+            50%      { transform: translate(120px, 80px); }
+        }
+        @keyframes floatB {
+            0%, 100% { transform: translate(0, 0); }
+            50%      { transform: translate(-100px, -80px); }
+        }
+
+        /* ===== LAYOUT CONTAINER ===== */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* ===== HEADER ===== */
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        header h1 {
+            font-size: 2.6rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #a855f7, #3b82f6, #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 6px;
+            letter-spacing: -0.5px;
+        }
+        header p {
+            color: #94a3b8;
+            font-size: 1.05rem;
+            font-weight: 300;
+        }
+
+        /* ===== GLASSMORPHISM BASE CARD ===== */
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+            padding: 30px;
+            transition: all 0.3s ease;
+        }
+        .card:hover {
+            border-color: rgba(255, 255, 255, 0.18);
+            box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.4);
+        }
+
+        /* ===== QUOTE CARD ===== */
+        .quote-card {
+            margin-bottom: 25px;
+            position: relative;
+        }
+        .quote-icon {
+            font-size: 1.8rem;
+            color: #a855f7;
+            opacity: 0.7;
+            margin-bottom: 10px;
+        }
+        #quoteText {
+            font-size: 1.2rem;
+            font-weight: 400;
+            line-height: 1.6;
+            font-style: italic;
+            color: #f8fafc;
+            margin-bottom: 12px;
+            transition: opacity 0.5s ease;
+        }
+        #quoteAuthor {
+            color: #94a3b8;
+            font-size: 0.95rem;
+            font-weight: 500;
+            text-align: right;
+            transition: opacity 0.5s ease;
+        }
+        .new-quote-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #f8fafc;
+            width: 42px; height: 42px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .new-quote-btn:hover {
+            background: rgba(168, 85, 247, 0.2);
+            transform: rotate(180deg);
+            border-color: rgba(168, 85, 247, 0.5);
+        }
+
+        /* ===== MAIN 2-COLUMN GRID ===== */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+        }
+
+        /* ===== POMODORO TIMER CARD ===== */
+        .timer-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .card-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            align-self: flex-start;
+        }
+        .card-title i { color: #a855f7; }
+
+        /* The Focus / Short Break / Long Break tabs */
+        .timer-mode-tabs {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 25px;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 5px;
+            border-radius: 12px;
+        }
+        .mode-tab {
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+        .mode-tab:hover { color: #f8fafc; }
+        .mode-tab.active {
+            background: linear-gradient(135deg, #a855f7, #3b82f6);
+            color: white;
+        }
+
+        /* Circular SVG timer */
+        .timer-display {
+            position: relative;
+            width: 260px;
+            height: 260px;
+            margin-bottom: 30px;
+        }
+        .timer-svg {
+            width: 100%;
+            height: 100%;
+            transform: rotate(-90deg); /* Start the ring from the top */
+        }
+        .timer-bg-circle {
+            fill: none;
+            stroke: rgba(255, 255, 255, 0.06);
+            stroke-width: 8;
+        }
+        .timer-progress-circle {
+            fill: none;
+            stroke: url(#gradient);
+            stroke-width: 8;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 1s linear;
+        }
+        .time-text {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+        .time-text .time {
+            font-size: 3.6rem;
+            font-weight: 600;
+            font-variant-numeric: tabular-nums; /* keeps numbers from jumping */
+        }
+        .time-text .status {
+            font-size: 0.8rem;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 2.5px;
+            margin-top: 4px;
+        }
+
+        /* Timer Start / Reset buttons */
+        .timer-buttons {
+            display: flex;
+            gap: 12px;
+        }
+        .timer-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #f8fafc;
+            padding: 12px 28px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 500;
+            font-family: inherit;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .timer-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+        }
+        .timer-btn.primary {
+            background: linear-gradient(135deg, #a855f7, #3b82f6);
+            border: none;
+        }
+        .timer-btn.primary:hover {
+            box-shadow: 0 8px 24px rgba(168, 85, 247, 0.45);
+        }
+
+        /* ===== TO-DO LIST CARD ===== */
+        .todo-card { display: flex; flex-direction: column; }
+
+        .todo-input-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        #todoInput {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #f8fafc;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+        #todoInput:focus {
+            border-color: rgba(168, 85, 247, 0.5);
+            background: rgba(0, 0, 0, 0.3);
+            box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.1);
+        }
+        #todoInput::placeholder { color: #64748b; }
+
+        .add-btn {
+            background: linear-gradient(135deg, #a855f7, #3b82f6);
+            border: none;
+            color: white;
+            width: 48px; height: 48px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1.05rem;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .add-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(168, 85, 247, 0.45);
+        }
+
+        .todo-list {
+            list-style: none;
+            max-height: 350px;
+            overflow-y: auto;
+            padding-right: 6px;
+        }
+        /* Custom scrollbar for a polished feel */
+        .todo-list::-webkit-scrollbar { width: 6px; }
+        .todo-list::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.1); border-radius: 3px; }
+        .todo-list::-webkit-scrollbar-thumb { background: rgba(168, 85, 247, 0.35); border-radius: 3px; }
+        .todo-list::-webkit-scrollbar-thumb:hover { background: rgba(168, 85, 247, 0.6); }
+
+        .todo-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 14px 16px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.3s ease;
+            animation: slideIn 0.35s ease;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-15px); }
+            to   { opacity: 1; transform: translateX(0); }
+        }
+        .todo-item:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        /* Custom-styled checkbox */
+        .todo-checkbox {
+            width: 22px; height: 22px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+        .todo-checkbox.checked {
+            background: linear-gradient(135deg, #a855f7, #3b82f6);
+            border-color: transparent;
+        }
+        .todo-checkbox.checked::after {
+            content: '\f00c';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            color: white;
+            font-size: 0.72rem;
+        }
+
+        .todo-text {
+            flex: 1;
+            font-size: 0.95rem;
+            color: #f8fafc;
+            transition: all 0.3s ease;
+            word-break: break-word;
+        }
+        .todo-item.completed .todo-text {
+            text-decoration: line-through;
+            color: #64748b;
+        }
+
+        .delete-btn {
+            background: transparent;
+            border: none;
+            color: #64748b;
+            cursor: pointer;
+            font-size: 0.95rem;
+            padding: 6px 10px;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            opacity: 0; /* hidden until you hover the row */
+        }
+        .todo-item:hover .delete-btn { opacity: 1; }
+        .delete-btn:hover {
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        /* Empty state for the to-do list */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #64748b;
+        }
+        .empty-state i {
+            font-size: 2.5rem;
+            margin-bottom: 12px;
+            opacity: 0.4;
+        }
+        .empty-state p { font-size: 0.9rem; }
+
+        /* ===== MOBILE RESPONSIVE ===== */
+        @media (max-width: 850px) {
+            .main-grid { grid-template-columns: 1fr; }
+            header h1 { font-size: 2.1rem; }
+            .timer-display { width: 220px; height: 220px; }
+            .time-text .time { font-size: 2.9rem; }
+        }
+        @media (max-width: 480px) {
+            body { padding: 20px 14px; }
+            .card { padding: 22px; }
+            .timer-btn { padding: 10px 20px; font-size: 0.9rem; }
+            .new-quote-btn { width: 36px; height: 36px; top: 16px; right: 16px; }
+        }
+
+        /* Reduced motion preference */
+        @media (prefers-reduced-motion: reduce) {
+            * { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition: none !important; }
+        }
+
+        /* Keyboard focus styles */
+        :focus { outline: none; }
+        :focus-visible { outline: 3px solid rgba(168,85,247,0.5); border-radius: 8px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- ===== HEADER ===== -->
+    <header>
+        <h1>Focus &amp; Flow</h1>
+        <p>Your premium productivity dashboard</p>
+    </header>
+
+    <!-- ===== MOTIVATIONAL QUOTE WIDGET ===== -->
+    <div class="card quote-card">
+        <div class="quote-icon"><i class="fas fa-quote-left" aria-hidden="true"></i></div>
+        <p id="quoteText">Loading inspiration...</p>
+        <p id="quoteAuthor">— Author</p>
+        <button class="new-quote-btn" id="newQuoteBtn" type="button" aria-label="Get a new quote" title="Get a new quote">
+            <i class="fas fa-sync-alt" aria-hidden="true"></i>
+        </button>
+    </div>
+
+    <!-- ===== TWO-COLUMN GRID: TIMER + TO-DO ===== -->
+    <div class="main-grid">
+
+        <!-- ===== POMODORO TIMER CARD ===== -->
+        <div class="card timer-card">
+            <h2 class="card-title"><i class="fas fa-clock" aria-hidden="true"></i> Pomodoro Timer</h2>
+
+            <!-- Mode tabs (bonus feature: full Pomodoro cycle support) -->
+            <div class="timer-mode-tabs" role="tablist" aria-label="Timer modes">
+                <button class="mode-tab active" data-mode="focus" data-time="25" role="tab" aria-selected="true" tabindex="0">Focus</button>
+                <button class="mode-tab"        data-mode="short" data-time="5" role="tab" aria-selected="false" tabindex="-1">Short Break</button>
+                <button class="mode-tab"        data-mode="long"  data-time="15" role="tab" aria-selected="false" tabindex="-1">Long Break</button>
+            </div>
+
+            <!-- Circular SVG progress ring -->
+            <div class="timer-display">
+                <svg class="timer-svg" viewBox="0 0 200 200" aria-hidden="true">
+                    <defs>
+                        <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%"   stop-color="#a855f7"/>
+                            <stop offset="100%" stop-color="#3b82f6"/>
+                        </linearGradient>
+                    </defs>
+                    <circle class="timer-bg-circle"       cx="100" cy="100" r="92"></circle>
+                    <circle class="timer-progress-circle" id="progressCircle"
+                            cx="100" cy="100" r="92"></circle>
+                </svg>
+                <div class="time-text" role="status" aria-live="polite" aria-atomic="true">
+                    <div class="time"   id="timeDisplay">25:00</div>
+                    <div class="status" id="statusText">Focus Time</div>
+                </div>
+            </div>
+
+            <!-- Start / Pause / Reset buttons -->
+            <div class="timer-buttons">
+                <button class="timer-btn primary" id="startPauseBtn" type="button" aria-label="Start or pause timer">
+                    <i class="fas fa-play" aria-hidden="true"></i>
+                    <span class="btn-label">Start</span>
+                </button>
+                <button class="timer-btn" id="resetBtn" type="button" aria-label="Reset timer">
+                    <i class="fas fa-rotate-left" aria-hidden="true"></i>
+                    <span class="btn-label">Reset</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- ===== TO-DO LIST CARD ===== -->
+        <div class="card todo-card">
+            <h2 class="card-title"><i class="fas fa-list-check" aria-hidden="true"></i> To-Do List</h2>
+
+            <!-- Input + Add button -->
+            <div class="todo-input-row">
+                <input type="text" id="todoInput" placeholder="Add a new task..." maxlength="100" aria-label="New task">
+                <button class="add-btn" id="addBtn" type="button" aria-label="Add task"><i class="fas fa-plus" aria-hidden="true"></i></button>
+            </div>
+
+            <!-- The actual list -->
+            <ul class="todo-list" id="todoList"></ul>
+        </div>
+
+    </div>
+</div>
+
+<script>
+/* ===================================================================
+   FOCUS & FLOW DASHBOARD — VANILLA JAVASCRIPT
+   Accessibility, bug fixes, reduced-motion, and timer persistence added.
+   =================================================================== */
+
+
+/* ---------- 1) MOTIVATIONAL QUOTE WIDGET ---------- */
+
+const quotes = [
+    { text: "The secret of getting ahead is getting started.", author: "Mark Twain" },
+    { text: "Productivity is never an accident. It is always the result of a commitment to excellence, intelligent planning, and focused effort.", author: "Paul J. Meyer" },
+    { text: "Focus on being productive instead of busy.", author: "Tim Ferriss" },
+    { text: "Don't watch the clock; do what it does. Keep going.", author: "Sam Levenson" },
+    { text: "The way to get started is to quit talking and begin doing.", author: "Walt Disney" },
+    { text: "Either you run the day, or the day runs you.", author: "Jim Rohn" },
+    { text: "It always seems impossible until it's done.", author: "Nelson Mandela" },
+    { text: "Success is the sum of small efforts repeated day in and day out.", author: "Robert Collier" },
+    { text: "Action is the foundational key to all success.", author: "Pablo Picasso" },
+    { text: "Discipline is choosing between what you want now and what you want most.", author: "Abraham Lincoln" },
+    { text: "Concentrate all your thoughts upon the work in hand.", author: "Alexander Graham Bell" },
+    { text: "Do the hard jobs first. The easy jobs will take care of themselves.", author: "Dale Carnegie" },
+    { text: "Until we can manage time, we can manage nothing else.", author: "Peter Drucker" },
+    { text: "The future depends on what you do today.", author: "Mahatma Gandhi" },
+    { text: "You don't have to be great to start, but you have to start to be great.", author: "Zig Ziglar" }
+];
+
+const quoteText   = document.getElementById('quoteText');
+const quoteAuthor = document.getElementById('quoteAuthor');
+const newQuoteBtn = document.getElementById('newQuoteBtn');
+
+function displayRandomQuote() {
+    const random = quotes[Math.floor(Math.random() * quotes.length)];
+    quoteText.style.opacity   = '0';
+    quoteAuthor.style.opacity = '0';
+    setTimeout(() => {
+        quoteText.textContent   = `"${random.text}"`;
+        quoteAuthor.textContent = `— ${random.author}`;
+        quoteText.style.opacity   = '1';
+        quoteAuthor.style.opacity = '1';
+    }, 200);
+}
+displayRandomQuote();
+newQuoteBtn.addEventListener('click', displayRandomQuote);
+
+
+/* ---------- 2) POMODORO TIMER (with persistence & accessibility) ---------- */
+
+const timeDisplay    = document.getElementById('timeDisplay');
+const statusText     = document.getElementById('statusText');
+const startPauseBtn  = document.getElementById('startPauseBtn');
+const resetBtn       = document.getElementById('resetBtn');
+const progressCircle = document.getElementById('progressCircle');
+const modeTabs       = Array.from(document.querySelectorAll('.mode-tab'));
+
+const TIMER_STORAGE_KEY = 'focusFlowTimer';
+
+// Timer state
+let currentMode = 'focus';
+let totalSeconds     = 25 * 60;          // Total seconds for the current mode
+let remainingSeconds = totalSeconds;     // Seconds left on the clock
+let timerInterval    = null;             // setInterval reference
+let isRunning        = false;            // Play / Pause flag
+
+// Circle math — circumference = 2 * π * radius (r = 92)
+const CIRCLE_CIRCUMFERENCE = 2 * Math.PI * 92;
+progressCircle.style.strokeDasharray  = CIRCLE_CIRCUMFERENCE;
+progressCircle.style.strokeDashoffset = CIRCLE_CIRCUMFERENCE;
+
+function updateDisplay() {
+    const minutes = Math.floor(remainingSeconds / 60);
+    const seconds = remainingSeconds % 60;
+    timeDisplay.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+
+    // Animate the ring based on % of time remaining — guard against division by zero
+    const progress = (totalSeconds > 0) ? (remainingSeconds / totalSeconds) : 0;
+    progressCircle.style.strokeDashoffset = CIRCLE_CIRCUMFERENCE * (1 - progress);
+
+    // Update accessible label and the browser tab title
+    const accessibleLabel = `${timeDisplay.textContent} — ${statusText.textContent}`;
+    const timeTextContainer = document.querySelector('.time-text');
+    if (timeTextContainer) timeTextContainer.setAttribute('aria-label', accessibleLabel);
+    document.title = `${timeDisplay.textContent} — Focus & Flow`;
+
+    // Persist timer UI state (do not auto-start on load)
+    saveTimerState(false);
+}
+
+function startTimer() {
+    if (isRunning) return;
+    isRunning = true;
+    // update UI
+    startPauseBtn.querySelector('.btn-label').textContent = 'Pause';
+    startPauseBtn.querySelector('i').className = 'fas fa-pause';
+
+    timerInterval = setInterval(() => {
+        if (remainingSeconds > 0) {
+            remainingSeconds--;
+            updateDisplay();
+        } else {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            isRunning = false;
+            startPauseBtn.querySelector('.btn-label').textContent = 'Start';
+            startPauseBtn.querySelector('i').className = 'fas fa-play';
+            playCompletionSound();
+            // announce completion via aria-live (statusText already describes mode)
+            setTimeout(() => alert(`${statusText.textContent} complete! 🎉`), 100);
+            saveTimerState(false);
+        }
+    }, 1000);
+}
+
+function pauseTimer() {
+    if (timerInterval) clearInterval(timerInterval);
+    timerInterval = null;
+    isRunning = false;
+    startPauseBtn.querySelector('.btn-label').textContent = 'Resume';
+    startPauseBtn.querySelector('i').className = 'fas fa-play';
+    saveTimerState(false);
+}
+
+startPauseBtn.addEventListener('click', () => {
+    isRunning ? pauseTimer() : startTimer();
+});
+
+resetBtn.addEventListener('click', () => {
+    if (timerInterval) clearInterval(timerInterval);
+    timerInterval = null;
+    isRunning = false;
+    remainingSeconds = totalSeconds;
+    startPauseBtn.querySelector('.btn-label').textContent = 'Start';
+    startPauseBtn.querySelector('i').className = 'fas fa-play';
+    updateDisplay();
+    saveTimerState(false);
+});
+
+function setActiveTab(newTab) {
+    modeTabs.forEach(t => {
+        t.classList.remove('active');
+        t.setAttribute('aria-selected', 'false');
+        t.setAttribute('tabindex', '-1');
+    });
+    newTab.classList.add('active');
+    newTab.setAttribute('aria-selected', 'true');
+    newTab.setAttribute('tabindex', '0');
+}
+
+modeTabs.forEach((tab, i) => {
+    tab.addEventListener('click', () => {
+        // Highlight clicked tab and update state
+        setActiveTab(tab);
+
+        if (timerInterval) clearInterval(timerInterval);
+        timerInterval = null;
+        isRunning = false;
+        startPauseBtn.querySelector('.btn-label').textContent = 'Start';
+        startPauseBtn.querySelector('i').className = 'fas fa-play';
+
+        const minutes = parseInt(tab.dataset.time, 10);
+        totalSeconds     = minutes * 60;
+        remainingSeconds = totalSeconds;
+
+        const labels = { focus: 'Focus Time', short: 'Short Break', long: 'Long Break' };
+        statusText.textContent = labels[tab.dataset.mode] || 'Timer';
+        currentMode = tab.dataset.mode;
+
+        updateDisplay();
+        saveTimerState(false);
+    });
+
+    // keyboard navigation for tabs
+    tab.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowRight') {
+            e.preventDefault();
+            modeTabs[(i + 1) % modeTabs.length].focus();
+        } else if (e.key === 'ArrowLeft') {
+            e.preventDefault();
+            modeTabs[(i - 1 + modeTabs.length) % modeTabs.length].focus();
+        } else if (e.key === 'Home') {
+            e.preventDefault();
+            modeTabs[0].focus();
+        } else if (e.key === 'End') {
+            e.preventDefault();
+            modeTabs[modeTabs.length - 1].focus();
+        } else if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            tab.click();
+        }
+    });
+});
+
+function playCompletionSound() {
+    try {
+        const ctx  = new (window.AudioContext || window.webkitAudioContext)();
+        const osc  = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type           = 'sine';
+        osc.frequency.value = 800;
+        gain.gain.setValueAtTime(0.3, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 1.5);
+        osc.start();
+        osc.stop(ctx.currentTime + 1.5);
+    } catch (e) { /* Audio not supported — fail silently */ }
+}
+
+
+/* ---------- 3) TO-DO LIST (with localStorage persistence) ---------- */
+
+const todoInput = document.getElementById('todoInput');
+const addBtn    = document.getElementById('addBtn');
+const todoList  = document.getElementById('todoList');
+
+let todos = JSON.parse(localStorage.getItem('focusFlowTodos')) || [];
+
+function saveTodos() {
+    localStorage.setItem('focusFlowTodos', JSON.stringify(todos));
+}
+
+function escapeHTML(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
+
+function renderTodos() {
+    todoList.innerHTML = '';
+    if (todos.length === 0) {
+        todoList.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-clipboard-list" aria-hidden="true"></i>
+                <p>No tasks yet. Add one above to get started!</p>
+            </div>`;
+        return;
+    }
+    todos.forEach((todo, index) => {
+        const li = document.createElement('li');
+        li.className = 'todo-item' + (todo.completed ? ' completed' : '');
+        li.innerHTML = `
+            <div class="todo-checkbox ${todo.completed ? 'checked' : ''}" data-index="${index}" role="button" tabindex="0" aria-pressed="${todo.completed ? 'true' : 'false'}"></div>
+            <span class="todo-text">${escapeHTML(todo.text)}</span>
+            <button class="delete-btn" data-index="${index}" title="Delete task" aria-label="Delete task">
+                <i class="fas fa-trash" aria-hidden="true"></i>
+            </button>
+        `;
+        todoList.appendChild(li);
+    });
+
+    document.querySelectorAll('.todo-checkbox').forEach(box => {
+        box.addEventListener('click', () => toggleTodo(parseInt(box.dataset.index, 10)));
+        box.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                toggleTodo(parseInt(box.dataset.index, 10));
+            }
+        });
+    });
+    document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', () => deleteTodo(parseInt(btn.dataset.index, 10)));
+    });
+}
+
+function addTodo() {
+    const text = todoInput.value.trim();
+    if (!text) return;
+    todos.push({ text: text, completed: false });
+    todoInput.value = '';
+    saveTodos();
+    renderTodos();
+}
+
+function toggleTodo(index) {
+    if (typeof todos[index] === 'undefined') return;
+    todos[index].completed = !todos[index].completed;
+    saveTodos();
+    renderTodos();
+}
+
+function deleteTodo(index) {
+    todos.splice(index, 1);
+    saveTodos();
+    renderTodos();
+}
+
+addBtn.addEventListener('click', addTodo);
+todoInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') addTodo();
+});
+
+renderTodos();
+
+
+/* ---------- 4) TIMER PERSISTENCE HELPERS ---------- */
+
+function saveTimerState(allowAutoStart) {
+    // allowAutoStart ignored for now; do not auto-start on load
+    const state = {
+        mode: currentMode,
+        totalSeconds,
+        remainingSeconds,
+        isRunning: false // never persist running state to avoid autoplay
+    };
+    try { localStorage.setItem(TIMER_STORAGE_KEY, JSON.stringify(state)); } catch (e) { /* ignore */ }
+}
+
+function loadTimerState() {
+    try {
+        const raw = localStorage.getItem(TIMER_STORAGE_KEY);
+        if (!raw) return;
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed.remainingSeconds === 'number' && typeof parsed.totalSeconds === 'number') {
+            totalSeconds = parsed.totalSeconds;
+            remainingSeconds = Math.min(parsed.remainingSeconds, totalSeconds);
+            currentMode = parsed.mode || 'focus';
+            // set active tab accordingly
+            const tabToMatch = modeTabs.find(t => t.dataset.mode === currentMode) || modeTabs[0];
+            setActiveTab(tabToMatch);
+            const labels = { focus: 'Focus Time', short: 'Short Break', long: 'Long Break' };
+            statusText.textContent = labels[currentMode] || 'Timer';
+            updateDisplay();
+        }
+    } catch (e) { /* ignore corrupt data */ }
+}
+
+// Load persisted timer state (UI only) but do NOT start the timer automatically
+loadTimerState();
+
+// First render of the timer when the page loads
+updateDisplay();
+
+</script>
+
+</body>
+</html>
