@@ -32,10 +32,4 @@ It's a single self-contained file — zero installation, zero dependencies.
 - **localStorage API** — For persistent to-do storage
 - **Google Fonts** (Poppins) & **Font Awesome 6** via CDN
 
-## 📸 Preview
-
-*(Add a screenshot or GIF of the dashboard here once deployed)*
-
----
-
 Built as Project 1 of my 20-app portfolio series. 🚀
